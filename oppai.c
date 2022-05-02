@@ -2057,6 +2057,7 @@ int pp_std(ezpp_t ez) {
   float final_multiplier;
   float acc_bonus, od_bonus;
   float od_squared;
+  float aim_crosscheck;
   float hd_bonus;
 
   /* acc used for pp is different in scorev1 because it ignores sliders */
@@ -2097,7 +2098,7 @@ int pp_std(ezpp_t ez) {
 
   if (ez->mods & MODS_RX) {
     if (ez->ar > 10.7f) {
-      ar_bonus += 0.45f * pow(ez->ar - 10.7f);
+      ar_bonus += 0.45f * (ez->ar - 10.7f);
     } else if (ez->ar < 8.5f) {
       ar_bonus += 0.025f * (8.5f - ez->ar);
     }
