@@ -2202,6 +2202,8 @@ int pp_std(ezpp_t ez) {
       pow(ez->acc_pp, 1.158f),
       0.99f / 1.1f
     ) * final_multiplier / 1.12f;
+
+    ez->pp -= al_min(pow(ez->speed_pp, 0.95f), ez->pp * 0.6);
   } else if (ez->mods & MODS_AP) {
     /* speed & acc */
     ez->pp = (float)pow(
