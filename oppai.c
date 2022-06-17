@@ -2057,8 +2057,9 @@ int pp_std(ezpp_t ez) {
   float final_multiplier;
   float acc_bonus, od_bonus;
   float od_squared;
-  float aim_crosscheck;
   float hd_bonus;
+
+  float aim_crosscheck;
 
   /* acc used for pp is different in scorev1 because it ignores sliders */
   float real_acc;
@@ -2150,59 +2151,64 @@ int pp_std(ezpp_t ez) {
 
   ez->aim_pp *= acc_bonus;
   ez->aim_pp *= od_bonus;
-  ez->aim_pp *= aim_crosscheck;
+  if(ez->mods & MODS_RX) {
+    ez->aim_pp *= aim_crosscheck;
+  }
 
   /* speed pp -------------------------------------------------------- */
   ez->speed_pp = base_pp(ez->speed_stars);
-
-  if(ez->mods & MODS_RX == 0)
-  {
-    ez->speed_pp *= length_bonus;
-    ez->speed_pp *= miss_penality;
-    ez->speed_pp *= combo_break;
-    ez->speed_pp *= hd_bonus;
-
-    /* scale the speed value with accuracy slightly */
-    ez->speed_pp *= 0.02f + accuracy;
-
-    /* it's important to also consider accuracy difficulty when doing that */
-    ez->speed_pp *= 0.96f + (od_squared / 1600.0f);
-  
-    if (ez->ar > 10.33f) {
-      ez->speed_pp *= ar_bonus;
-    }
+  ez->speed_pp *= length_bonus;
+  ez->speed_pp *= miss_penality;
+  ez->speed_pp *= combo_break;
+  if (ez->ar > 10.33f) {
+    ez->speed_pp *= ar_bonus;
   }
+  ez->speed_pp *= hd_bonus;
+
+  /* scale the speed value with accuracy slightly */
+  ez->speed_pp *= 0.02f + accuracy;
+
+  /* it's important to also consider accuracy difficulty when doing that */
+  ez->speed_pp *= 0.96f + (od_squared / 1600.0f);
 
   /* acc pp ---------------------------------------------------------- */
   /* arbitrary values tom crafted out of trial and error */
-  ez->acc_pp = (float)pow(1.52163f, ez->mods & MODS_RX ? 5.0f + ez->od / 2.0f : ez->od) *
-    (float)pow(real_acc, ez->mods & MODS_RX ? 18.0f : 24.0f) * 2.83f;
+  if(ez->mods & MODS_RX) {
+  	ez->acc_pp = (float)pow(1.52163f, 5.0f + ez->od / 2.0f) *
+	  	(float)pow(real_acc, 18.0f) * 2.83f;
+  }
+  else {
+    ez->acc_pp = (float)pow(1.52163f, ez->od) *
+      (float)pow(real_acc, 24.0f) * 2.83f;
+  }
 
   /* length bonus (not the same as speed/aim length bonus) */
   ez->acc_pp *= al_min(1.15f, (float)pow(ncircles / 1000.0f, 0.3f));
 
   if (ez->mods & MODS_HD) ez->acc_pp *= 1.08f;
-  if ((ez->mods & MODS_FL) && (ez->mods & MODS_RX == 0)) ez->acc_pp *= 1.02f;
+  if (ez->mods & MODS_FL) ez->acc_pp *= 1.02f;
 
   /* total pp -------------------------------------------------------- */
-  final_multiplier = 1.0f;
-  if (ez->mods & MODS_NF) final_multiplier *= 0.90f;
-  if (ez->mods & MODS_SO) final_multiplier *= 0.95f;
+  final_multiplier = 1.12f;
+  if (ez->mods & MODS_NF)
+    final_multiplier *= 0.90f;
+  if (ez->mods & MODS_SO)
+    final_multiplier *= 0.95f;
 
   if (ez->mods & MODS_RX) {
     /* aim & acc */
     ez->pp = (float)pow(
       pow(ez->aim_pp, 1.158f) +
-      pow(ez->acc_pp, 1.186f),
+      pow(ez->acc_pp, 1.158f),
       0.99f / 1.1f
-    ) * final_multiplier;
+    ) * final_multiplier / 1.12f;
   } else if (ez->mods & MODS_AP) {
     /* speed & acc */
     ez->pp = (float)pow(
       pow(ez->speed_pp, 1.1f) +
       pow(ez->acc_pp, 1.1f),
-      0.99f / 1.1f
-    ) * final_multiplier;
+      1.0f / 1.1f
+    );
   } else {
     ez->pp = (float)pow(
     /* aim, speed & acc */
