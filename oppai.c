@@ -2203,7 +2203,10 @@ int pp_std(ezpp_t ez) {
       0.99f / 1.1f
     ) * final_multiplier / 1.12f;
 
-    ez->pp -= al_min(pow(ez->speed_pp, 0.95f), ez->pp * 0.6);
+    float speed_nerf = pow(ez->speed_pp, 0.9f);
+
+    ez->pp -= al_min(speed_nerf, ez->pp * 0.45);
+
   } else if (ez->mods & MODS_AP) {
     /* speed & acc */
     ez->pp = (float)pow(
